@@ -9,11 +9,12 @@ Servo bldc;
 
 void actuator_init()
 {
-  // Initialize BLDC
-  bldc.attach(PIN_BLDC);
-  bldc.write(150); // Full throttle
-  delay(3000);     // Wait for 3 seconds
+  // Calibrate BLDC
+  bldc.attach(PIN_BLDC, 1000, 2000);
+  bldc.write(180); // Full throttle
+  delay(2000);     // Wait for 2 seconds
   bldc.write(0);   // Stop
+  delay(2000);     // Wait for 2 seconds again
 
   // Initialize servos
   servo_left.attach(PIN_SERVO_LEFT);
