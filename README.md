@@ -15,6 +15,15 @@
 - 일반적인 펌웨어 구성과 다르게 클린 아키텍쳐에 기반하여 localizatoin 및 control 로직을 하드웨어와 분리한다.
   - 현재 `C++`보다 `C`에 익숙한 상태이므로 먼저 C의 헤더 파일을 통하여 이를 구현하고 추후 `C++`의 `virtual` 키워드를 사용하여 코어 계층을 구성할 수 있도록 한다.
 
+## 하드웨어 구성
+
+- **Processor**: Arduino Uno
+- **Communication**: NRF24L01
+- **IMU**: MPU6050
+- **GPS**: NEO-6M
+- **Throttle**: BLDC 2200KV 30A
+- **Flap**: SG90
+
 ## 소스 구조
 
 - **src/src.ino**: Arduino Sketch를 사용하여 손쉽게 소스코드를 크로스 컴파일하고 업로드할 수 있도록 만든 진입점

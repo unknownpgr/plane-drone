@@ -1,5 +1,5 @@
 #include "core/communication.hpp"
-#include "pinmap.hpp"
+#include "arduino_pinmap.hpp"
 
 #include <SPI.h>
 #include "RF24.h"

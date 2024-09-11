@@ -1,7 +1,7 @@
 #include "core/actuator.hpp"
 
 #include <Servo.h>
-#include "pinmap.hpp"
+#include "arduino_pinmap.hpp"
 
 Servo servo_left;
 Servo servo_right;
