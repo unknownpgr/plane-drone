@@ -1,5 +1,8 @@
 {
   "files.associations": {
     "*.py": "python",
-  }
+  },
+  "cSpell.words": [
+    "GPIO"
+  ]
 }

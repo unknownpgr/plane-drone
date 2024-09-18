@@ -7,7 +7,7 @@ pico_sdk_init()
 project(drone C CXX ASM)
 
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
-set(INC_DIR ${SRC_DIR}/core)
+set(INC_DIR ${SRC_DIR})
 file(GLOB SOURCE_ARDUINO ${SRC_DIR}/arduino/*.c)
 file(GLOB SOURCE_PICO ${SRC_DIR}/pico/*.c)
 set(SOURCES
@@ -17,4 +17,6 @@ set(SOURCES
 
 add_compile_options(-Wall)
 add_executable(drone ${SOURCES})
+target_include_directories(drone PRIVATE ${INC_DIR})
 target_link_libraries(drone pico_stdlib)
+pico_add_extra_outputs(drone)
