@@ -10,7 +10,8 @@ sudo apt install -y         \
           libnewlib-arm-none-eabi
 
 cd /usr/local
-git clone https://github.com/raspberrypi/pico-sdk.git --branch master
+sudo rm -rf pico-sdk
+sudo git clone https://github.com/raspberrypi/pico-sdk.git --branch master
 cd pico-sdk
-git submodule update --init
+sudo git submodule update --init
 
