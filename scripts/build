@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+cd `dirname $0`/..
+ROOT=`pwd`
+
+mkdir -p _build
+cd _build
+cmake ..
+clear
+echo "CMake done. Starting build..."
+sleep 1
+make

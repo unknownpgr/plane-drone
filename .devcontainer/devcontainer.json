@@ -9,7 +9,8 @@
 				"streetsidesoftware.code-spell-checker",
 				"wayou.vscode-todo-highlight",
 				"GitHub.copilot",
-				"ms-vscode.cmake-tools"
+				"ms-vscode.cmake-tools",
+				"ms-vscode.cpptools-extension-pack"
 			]
 		}
 	},
