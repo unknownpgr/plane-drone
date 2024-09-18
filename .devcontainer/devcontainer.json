@@ -1,0 +1,20 @@
+{
+	"name": "plane-drone",
+	"image": "mcr.microsoft.com/devcontainers/base:jammy",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"mhutchie.git-graph",
+				"esbenp.prettier-vscode",
+				"streetsidesoftware.code-spell-checker",
+				"wayou.vscode-todo-highlight",
+				"GitHub.copilot"
+			]
+		}
+	},
+	"postCreateCommand": "scripts/init.sh",
+	"remoteEnv": {
+		"PATH": "${containerEnv:PATH}:/${containerWorkspaceFolder}/scripts",
+		"PICO_SDK_PATH": "/usr/local/pico-sdk"
+	}
+}
