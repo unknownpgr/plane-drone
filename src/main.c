@@ -7,8 +7,7 @@
 void entrypoint_plane();
 void entrypoint_controller();
 
-// Main entrypoint
-void entrypoint()
+void main()
 {
   actuator_init();
   util_init();
