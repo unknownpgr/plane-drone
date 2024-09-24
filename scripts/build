@@ -3,10 +3,15 @@ set -e
 cd `dirname $0`/..
 ROOT=`pwd`
 
+# Build the project
 mkdir -p _build
 cd _build
 cmake ..
-clear
-echo "CMake done. Starting build..."
-sleep 1
 make
+
+# Generate the easy-to-flash UF2 file
+TARGET_FILE=`ls -1 | grep *.uf2`
+TARGET_BASE64=`cat $TARGET_FILE | gzip | base64 -w 0`
+OUTPUT_FILE="out.uf2"
+echo
+echo "echo \"$TARGET_BASE64\" | base64 -d | gunzip > /Volumes/RPI-RP2/$OUTPUT_FILE"
