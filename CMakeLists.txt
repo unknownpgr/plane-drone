@@ -18,5 +18,5 @@ set(SOURCES
 add_compile_options(-Wall)
 add_executable(drone ${SOURCES})
 target_include_directories(drone PRIVATE ${INC_DIR})
-target_link_libraries(drone pico_stdlib)
+target_link_libraries(drone pico_stdlib hardware_i2c)
 pico_add_extra_outputs(drone)
