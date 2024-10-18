@@ -1,10 +1,7 @@
-#ifndef __CORE_TIMER_HPP
-#define __CORE_TIMER_HPP
+#pragma once
 
 #include <stdint.h>
 
 void timer_init();
-
 uint16_t timer_micros();
-
-#endif
+void timer_sleep(uint16_t ms);
