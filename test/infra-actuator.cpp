@@ -1,6 +1,7 @@
 #include "core-actuator.hpp"
 #include <Servo.h>
-#include "infra-pinmap.h"
+#include <Arduino.h>
+#include "infra-pinmap.hpp"
 
 Servo servoBLDC;
 Servo servoLeft;

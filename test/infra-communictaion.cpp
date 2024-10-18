@@ -5,7 +5,7 @@
 #include <RF24.h>
 #include <RF24_config.h>
 #include <nRF24L01.h>
-#include "infra-pinmap.h"
+#include "infra-pinmap.hpp"
 
 const RF24 radio(PIN_NRF_CE, PIN_NRF_CSN);
 const byte address[6] = "00001";
