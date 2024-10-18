@@ -18,3 +18,12 @@
       - 물론 그냥 핀헤더나 박스 헤더를 사용해도 충분할 것 같다.
     - 이러한 케이블과 프로세서를 연결하는 어댑터 보드를 만든다.
       - 이 어댑터 보드는 단순히 프로세서와 케이블의 연결 역할만 담당하므로 처음에는 만능 기판으로 만들고 이후 필요에 따라 PCB로 만들어도 된다.
+
+## 회전에 대해 알아야 할 내용
+
+- Rotation axis theorm: https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem
+- Rodrigues' rotation formula: https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+- Infinitesimal rotation: https://en.wikipedia.org/wiki/Infinitesimal_rotation
+- Gram-Schmidt process: https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
+
+- MPU6050은 우수좌표계 사용
