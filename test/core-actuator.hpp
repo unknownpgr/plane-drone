@@ -1,5 +1,4 @@
-#ifndef __CORE_ACTUATOR_H__
-#define __CORE_ACTUATOR_H__
+#pragma once
 
 #include <stdint.h>
 
@@ -24,5 +23,3 @@ void actuator_setFlapLeft(float angle);
  * Note: higher value means upward flap
  */
 void actuator_setFlapRight(float angle);
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef __POST_H__
-#define __POST_H__
+#pragma once
 
 /**
  * IMU 센서로부터 받은 각속도와 가속도를 기반으로 자세를 추정한다.
@@ -34,5 +33,3 @@ void initializeState(State *state);
 void estimateByAngularVelocity(State *state, AngularVelocity *omega, Scalar dt, State *result);
 void estimateByAcceleration(Acceleration *accl, State *result);
 void estimateByComplementaryFilter(State *state, AngularVelocity *omega, Acceleration *accl, Scalar dt, State *result);
-
-#endif

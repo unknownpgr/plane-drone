@@ -1,5 +1,4 @@
-#ifndef __CORE_IMU_H__
-#define __CORE_IMU_H__
+#pragma once
 
 typedef float IMUScalar;
 
@@ -17,5 +16,3 @@ typedef struct IMUData
 
 void imu_init();
 void imu_read(IMUData *data);
-
-#endif

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Arduino.h"
-
 #define PIN_NRF_CE 7
 #define PIN_NRF_CSN 8
 #define PIN_NRF_MOSI 11

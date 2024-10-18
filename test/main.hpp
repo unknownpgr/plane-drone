@@ -1,4 +1,3 @@
-#ifndef __TMP_H
-#define __TMP_H
+#pragma once
+
 void entrypoint();
-#endif
