@@ -15,13 +15,13 @@ void imu_init()
 
 void imu_read(IMUData *data)
 {
-  uint16_t ax, ay, az, gx, gy, gz;
+  int16_t ax, ay, az, gx, gy, gz;
   mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
-  data->ax = ax / 32768.0 * 4.0 * 9.8;
-  data->ay = ay / 32768.0 * 4.0 * 9.8;
-  data->az = az / 32768.0 * 4.0 * 9.8;
-  data->gx = gx / 32768.0 * 500.0 / 180.0 * M_PI;
-  data->gy = gy / 32768.0 * 500.0 / 180.0 * M_PI;
-  data->gz = gz / 32768.0 * 500.0 / 180.0 * M_PI;
+  data->ax = ax * 4.0 / 32768.0;
+  data->ay = ay * 4.0 / 32768.0;
+  data->az = az * 4.0 / 32768.0;
+  data->gx = gx * 3.14159265358979323846 * 500.0 / (32768.00 * 180.0);
+  data->gy = gy * 3.14159265358979323846 * 500.0 / (32768.00 * 180.0);
+  data->gz = gz * 3.14159265358979323846 * 500.0 / (32768.00 * 180.0);
 }
