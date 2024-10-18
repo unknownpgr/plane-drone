@@ -1,6 +1,11 @@
 {
 	"name": "plane-drone",
 	"image": "mcr.microsoft.com/devcontainers/base:jammy",
+	"runArgs": [
+		"--privileged",
+		"-v",
+		"/dev:/dev"
+	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
