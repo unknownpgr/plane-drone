@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdarg.h>
 #include "core-actuator.hpp"
 #include "core-communication.hpp"
 #include "core-imu.hpp"
@@ -6,14 +8,32 @@
 #include "core-timer.hpp"
 
 #define M_PI 3.14159265358979323846
+#define printf communication_send_serial
+
+void log(const char *format, ...)
+{
+  static uint32_t timestamp = 0;
+  uint16_t currentTime = timer_micros();
+  timestamp += (uint16_t)(currentTime - timestamp);
+  printf("[%u] ", (timestamp / 1000));
+  va_list args;
+  va_start(args, format);
+  printf(format, args);
+  va_end(args);
+  printf("\r\n");
+}
 
 void entrypoint()
 {
-  // Initialize
-  imu_init();
-  actuator_init();
-  timer_init();
+  // Initialization
   communication_init();
+  log("Booted.");
+
+  log("Start initialization sequence...");
+  actuator_init();
+  imu_init();
+  timer_init();
+  log("Done.");
 
   State state;
   IMUData imuData;
@@ -43,8 +63,8 @@ void entrypoint()
 
     estimateByComplementaryFilter(&state, &omega, &accel, dt, &state);
 
-    float flapLeft = state.roll * 180.0 / M_PI + state.pitch * 180.0 / M_PI;
-    float flapRight = state.roll * 180.0 / M_PI + state.pitch * 180.0 / M_PI;
+    float flapLeft = state.pitch * 180.0 / M_PI + state.roll * 180.0 / M_PI;
+    float flapRight = state.pitch * 180.0 / M_PI - state.roll * 180.0 / M_PI;
 
     flapLeft = flapLeft > 60 ? 60 : flapLeft;
     flapLeft = flapLeft < -60 ? -60 : flapLeft;
@@ -55,8 +75,8 @@ void entrypoint()
     actuator_setFlapRight(flapRight);
 
     // Print state
-    communication_send_radio("Roll: %f ", state.roll * 180.0 / M_PI);
-    communication_send_radio("Pitch: %f ", state.pitch * 180.0 / M_PI);
-    communication_send_radio("Yaw: %f\n", state.yaw * 180.0 / M_PI);
+    printf("Roll: %d ", (int)(state.roll * 180.0 / M_PI));
+    printf("Pitch: %d ", (int)(state.pitch * 180.0 / M_PI));
+    printf("Yaw: %d\r\n", (int)(state.yaw * 180.0 / M_PI));
   }
 }
