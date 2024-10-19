@@ -15,21 +15,21 @@ PingCommand;
 #define COMMAND_THROTTLE 0x02
 type
 {
-  uint16_t throttle;
+  int16_t throttle;
 }
 SetThrottleCommand;
 
 #define COMMAND_PITCH 0x03
 type
 {
-  uint16_t pitch;
+  int16_t pitch;
 }
 SetPitchCommand;
 
 #define COMMAND_ROLL 0x04
 type
 {
-  uint16_t roll;
+  int16_t roll;
 }
 SetRollCommand;
 

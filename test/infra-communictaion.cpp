@@ -18,7 +18,7 @@ void communication_init()
   // Initialize NRF20L01
   radio.begin();
   radio.setPALevel(RF24_PA_LOW);
-  radio.openReadingPipe(1, address);
+  radio.openReadingPipe(0, address);
   radio.startListening();
 }
 
@@ -34,4 +34,24 @@ void communication_send_serial(const char *format, ...)
 
 void communication_send_radio(const char *format, ...)
 {
+}
+
+bool communication_receive_radio(RadioProtocol *protocol)
+{
+  if (radio.available())
+  {
+    radio.read(protocol, sizeof(RadioProtocol));
+    return true;
+  }
+  return false;
+}
+
+void communication_send_ack(uint8_t *bytes, uint8_t size)
+{
+  uint8_t ack[10] = {0};
+  for (int i = 0; i < size; i++)
+  {
+    ack[i] = bytes[i];
+  }
+  radio.writeAckPayload(1, ack, 10); // ACK 패킷에 데이터 포함
 }

@@ -7,7 +7,7 @@
 #include "core-pose.hpp"
 #include "core-timer.hpp"
 
-#define M_PI 3.14159265358979323846
+#define PI 3.14159265358979323846
 #define printf communication_send_serial
 
 void log(const char *format, ...)
@@ -27,24 +27,49 @@ void entrypoint()
 {
   // Initialization
   communication_init();
-  log("Booted.");
-
-  log("Start initialization sequence...");
   actuator_init();
   imu_init();
   timer_init();
-  log("Done.");
 
   State state;
   IMUData imuData;
   EulerAngle omega; // Unit: rad/s
   EulerAngle accel; // Unit: m/s^2
   uint16_t lastTime = timer_micros();
+  RadioProtocol packet;
+
+  float commandPitch = 0;
+  float commandRoll = 0;
 
   initializeState(&state);
 
   while (true)
   {
+    // Read command
+    if (communication_receive_radio(&packet))
+    {
+      switch (packet.command)
+      {
+      case COMMAND_PING:
+        communication_send_ack((uint8_t *)"PING", 4);
+        break;
+      case COMMAND_THROTTLE:
+        communication_send_ack((uint8_t *)"THROTTLE", 8);
+        actuator_setThrottle((float)(packet.throttle.throttle / 32767.f));
+        break;
+      case COMMAND_PITCH:
+        communication_send_ack((uint8_t *)"PITCH", 5);
+        commandPitch = (float)(packet.pitch.pitch * (90.f / 32767.f));
+        break;
+      case COMMAND_ROLL:
+        communication_send_ack((uint8_t *)"ROLL", 4);
+        commandRoll = (float)(packet.roll.roll * (90.f / 32767.f));
+        break;
+      default:
+        break;
+      }
+    }
+
     imu_read(&imuData);
 
     // 센서가 위아래로 뒤집힌 경우, y, z축만 반대로 뒤집힌다. x축을 기준으로 rotation했기 때문이다.
@@ -63,8 +88,8 @@ void entrypoint()
 
     estimateByComplementaryFilter(&state, &omega, &accel, dt, &state);
 
-    float flapLeft = state.pitch * 180.0 / M_PI + state.roll * 180.0 / M_PI;
-    float flapRight = state.pitch * 180.0 / M_PI - state.roll * 180.0 / M_PI;
+    float flapLeft = (state.pitch - commandPitch + state.roll - commandRoll) * 180.0 / PI;
+    float flapRight = (state.pitch - commandPitch - state.roll + commandRoll) * 180.0 / PI;
 
     flapLeft = flapLeft > 60 ? 60 : flapLeft;
     flapLeft = flapLeft < -60 ? -60 : flapLeft;
@@ -73,10 +98,5 @@ void entrypoint()
 
     actuator_setFlapLeft(flapLeft);
     actuator_setFlapRight(flapRight);
-
-    // Print state
-    printf("Roll: %d ", (int)(state.roll * 180.0 / M_PI));
-    printf("Pitch: %d ", (int)(state.pitch * 180.0 / M_PI));
-    printf("Yaw: %d\r\n", (int)(state.yaw * 180.0 / M_PI));
   }
 }

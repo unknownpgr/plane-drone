@@ -21,7 +21,7 @@ void actuator_init()
   delay(2000);          // Wait for 2 seconds again
 }
 
-void actuator_setBLDC(float value)
+void actuator_setThrottle(float value)
 {
   if (value < 0)
     value = 0;

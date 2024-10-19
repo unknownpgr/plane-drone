@@ -8,7 +8,7 @@ void actuator_init();
  * @brief Set the BLDC motor speed
  * min: 0, max: 1
  */
-void actuator_setBLDC(float value);
+void actuator_setThrottle(float value);
 
 /**
  * @brief Set the left flap angle
