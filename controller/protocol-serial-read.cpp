@@ -25,6 +25,7 @@ bool protocol_serial_read(SerialState *state, uint8_t inputData)
   case STATE_READY_2:
     state->index = 0;
     state->state = STATE_READ_DATA;
+    state->data[state->index++] = inputData;
     break;
 
   case STATE_READ_DATA:

@@ -55,7 +55,7 @@ def serial_write(fd: int, data: bytes):
 
     magic_bytes = b"\x55\xAA"
     data = magic_bytes + data + checksum
-    os.write(fd, magic_bytes + data)
+    os.write(fd, data)
 
 
 # Service layer

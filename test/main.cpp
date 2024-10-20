@@ -55,17 +55,18 @@ void entrypoint()
         break;
       case COMMAND_THROTTLE:
         communication_send_ack((uint8_t *)"THROTTLE", 8);
-        actuator_setThrottle((float)(packet.throttle.throttle / 32767.f));
+        actuator_setThrottle((float)(packet.throttle.throttle / 65535.f));
         break;
       case COMMAND_PITCH:
         communication_send_ack((uint8_t *)"PITCH", 5);
-        commandPitch = (float)(packet.pitch.pitch * (90.f / 32767.f));
+        commandPitch = (float)(packet.pitch.pitch * (90.f / 32767.f)) - 90.f;
         break;
       case COMMAND_ROLL:
         communication_send_ack((uint8_t *)"ROLL", 4);
-        commandRoll = (float)(packet.roll.roll * (90.f / 32767.f));
+        commandRoll = (float)(packet.roll.roll * (90.f / 32767.f)) - 90.0f;
         break;
       default:
+        communication_send_ack((uint8_t *)"UNKNOWN", 7);
         break;
       }
     }
@@ -88,8 +89,8 @@ void entrypoint()
 
     estimateByComplementaryFilter(&state, &omega, &accel, dt, &state);
 
-    float flapLeft = (state.pitch - commandPitch + state.roll - commandRoll) * 180.0 / PI;
-    float flapRight = (state.pitch - commandPitch - state.roll + commandRoll) * 180.0 / PI;
+    float flapLeft = (state.pitch + state.roll) * 180.0 / PI - commandPitch - commandRoll;
+    float flapRight = (state.pitch - state.roll) * 180.0 / PI - commandPitch + commandRoll;
 
     flapLeft = flapLeft > 60 ? 60 : flapLeft;
     flapLeft = flapLeft < -60 ? -60 : flapLeft;
