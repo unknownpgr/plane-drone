@@ -35,7 +35,6 @@ void setup()
       if (protocol_serial_read(&serialState, inputData))
       {
         radio.write(&serialState.data, 32);
-        Serial.println("Data sent.");
         if (radio.isAckPayloadAvailable())
         {
           radio.read(&data, 10);

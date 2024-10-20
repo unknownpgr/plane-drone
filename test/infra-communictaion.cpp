@@ -53,5 +53,5 @@ void communication_send_ack(uint8_t *bytes, uint8_t size)
   {
     ack[i] = bytes[i];
   }
-  radio.writeAckPayload(1, ack, 10); // ACK 패킷에 데이터 포함
+  radio.writeAckPayload(0, bytes, size); // ACK 패킷에 데이터 포함
 }
