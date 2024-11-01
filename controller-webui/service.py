@@ -1,6 +1,6 @@
 import os
 import time
-from threading import Thread
+from threading import Thread, Lock
 import select
 
 class DroneControllerService:
@@ -12,6 +12,7 @@ class DroneControllerService:
         self.hw_log_bytes = b""
         self.hw_logs = []
         self.listeners = []
+        self.lock = Lock()
         Thread(target=self.__task_read_hw_logs).start()
         Thread(target=self.__task_update_serial_ports).start()
 
@@ -85,7 +86,9 @@ class DroneControllerService:
 
         magic_bytes = b"\x55\xAA"
         data = magic_bytes + data + checksum
-        os.write(self.fd, data)
+
+        with self.lock:
+            os.write(self.fd, data)
 
     def add_listener(self, listener):
         self.listeners.append(listener)
