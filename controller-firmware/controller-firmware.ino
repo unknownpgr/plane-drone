@@ -14,7 +14,6 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println("\n\nController started.");
-  Serial.println("Sleep 3 seconds before enable radio.");
   radio.begin();
   radio.openWritingPipe(address);
   radio.setPALevel(RF24_PA_MIN);
@@ -42,11 +41,6 @@ void setup()
             Serial.print(data[i]);
           }
           Serial.println();
-          Serial.println("Data sent.");
-        }
-        else
-        {
-          Serial.println("Data sent.");
         }
       }
     }
