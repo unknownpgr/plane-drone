@@ -142,35 +142,6 @@
         await command({ command: "disconnect" });
       }
 
-      let previousData = {
-        throttle: 0,
-        pitch: 0,
-        roll: 0,
-      };
-
-      async function sendCommandToServer({ throttle, pitch, roll }) {
-        const currentData = {
-          throttle: Math.round(throttle * 100) / 100,
-          pitch: Math.round(pitch * 100) / 100,
-          roll: Math.round(roll * 100) / 100,
-        };
-
-        if (currentData.throttle !== previousData.throttle) {
-          await command({ command: "throttle", value: currentData.throttle });
-          previousData.throttle = currentData.throttle;
-        }
-
-        if (currentData.pitch !== previousData.pitch) {
-          await command({ command: "pitch", value: currentData.pitch });
-          previousData.pitch = currentData.pitch;
-        }
-
-        if (currentData.roll !== previousData.roll) {
-          await command({ command: "roll", value: currentData.roll });
-          previousData.roll = currentData.roll;
-        }
-      }
-
       async function updateLoop() {
         const onUpdate = ({
           ports: availablePorts,
@@ -304,8 +275,6 @@
         // Slowly decrease pitch and roll
         setPitch(pitch * 0.99);
         setRoll(roll * 0.99);
-
-        sendCommandToServer({ throttle, pitch, roll });
       }
 
       function forceReset() {
@@ -349,6 +318,39 @@
           event.preventDefault();
         }
       }
+
+      async function commandLoop() {
+        let previousThrottle = 0;
+        let previousPitch = 0;
+        let previousRoll = 0;
+
+        while (true) {
+          const currentThrottle = Math.round(throttle * 100) / 100;
+          const currentPitch = Math.round(pitch * 100) / 100;
+          const currentRoll = Math.round(roll * 100) / 100;
+
+          let isUpdated = false;
+
+          if (currentThrottle !== previousThrottle) {
+            previousThrottle = currentThrottle;
+            await command({ command: "throttle", value: throttle });
+            isUpdated = true;
+          }
+          if (currentPitch !== previousPitch) {
+            previousPitch = currentPitch;
+            await command({ command: "pitch", value: pitch });
+            isUpdated = true;
+          }
+          if (currentRoll !== previousRoll) {
+            previousRoll = currentRoll;
+            await command({ command: "roll", value: roll });
+            isUpdated = true;
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+      }
+      commandLoop();
 
       window.addEventListener("keydown", onKeyDown);
       window.addEventListener("keyup", onKeyUp);
