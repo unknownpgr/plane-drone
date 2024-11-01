@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flight Controller</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      head,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        width: 100%;
+        min-height: 100dvh;
+      }
+
+      .container {
+        width: 50rem;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .frame {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .value {
+        width: 0;
+        flex-grow: 1;
+        border: solid 1px #000000;
+      }
+
+      .label {
+        text-align: center;
+        padding: 0.5rem;
+      }
+
+      .box {
+        height: 10rem;
+        border-top: solid 1px #000000;
+        border-bottom: solid 1px #000000;
+      }
+
+      .value-label {
+        text-align: center;
+        padding: 0.5rem;
+      }
+
+      #logTag {
+        margin-top: 1rem;
+        padding: 1rem;
+        border: solid 1px #000000;
+        white-space: pre;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Flight Controller</h1>
+      <div>
+        <h2>Available Ports</h2>
+        <ul id="portList"></ul>
+      </div>
+      <div class="frame">
+        <div class="value">
+          <div class="label">Throttle</div>
+          <div class="box" style="display: flex; align-items: flex-end">
+            <div
+              id="throttleTag"
+              style="background-color: #000; width: 100%"
+            ></div>
+          </div>
+          <div class="value-label" id="throttleValueTag"></div>
+        </div>
+        <div class="value">
+          <div class="label">Pitch</div>
+          <div class="box" style="position: relative">
+            <div
+              id="pitchTag"
+              style="
+                position: absolute;
+                left: 0;
+                background-color: #000;
+                width: 100%;
+              "
+            ></div>
+          </div>
+          <div class="value-label" id="pitchValueTag"></div>
+        </div>
+        <div class="value">
+          <div class="label">Roll</div>
+          <div
+            class="box"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              overflow: hidden;
+            "
+          >
+            <div
+              id="rollTag"
+              style="width: 200rem; background-color: #000"
+            ></div>
+          </div>
+          <div class="value-label" id="rollValueTag"></div>
+        </div>
+      </div>
+      <div id="logTag">No log</div>
+    </div>
+    <script>
+      const throttleTag = document.getElementById("throttleTag");
+      const pitchTag = document.getElementById("pitchTag");
+      const rollTag = document.getElementById("rollTag");
+      const throttleValueTag = document.getElementById("throttleValueTag");
+      const pitchValueTag = document.getElementById("pitchValueTag");
+      const rollValueTag = document.getElementById("rollValueTag");
+      const portList = document.getElementById("portList");
+      const logTag = document.getElementById("logTag");
+
+      let throttle = 0;
+      let pitch = 0;
+      let roll = 0;
+
+      function setThreshold(value) {
+        if (value < 0) {
+          value = 0;
+        } else if (value > 1) {
+          value = 1;
+        }
+        throttle = value;
+        throttleTag.style.height = `${value * 100}%`;
+        throttleValueTag.textContent = value.toFixed(2);
+      }
+
+      function setPitch(value) {
+        if (value < -1) {
+          value = -1;
+        } else if (value > 1) {
+          value = 1;
+        }
+        pitch = value;
+        pitchTag.style.height = `${Math.abs(value) * 50}%`;
+        if (value < 0) {
+          pitchTag.style.top = "50%";
+        } else {
+          pitchTag.style.top = 50 - value * 50 + "%";
+        }
+        pitchValueTag.textContent = value.toFixed(2);
+      }
+
+      function setRoll(value) {
+        if (value < -1) {
+          value = -1;
+        } else if (value > 1) {
+          value = 1;
+        }
+        roll = value;
+        rollTag.style.height = `${1 / Math.cos((value * Math.PI) / 4)}rem`;
+        rollTag.style.transform = `skewY(${value * 45}deg)`;
+        rollValueTag.textContent = value.toFixed(2);
+      }
+
+      setThreshold(0);
+      setPitch(0);
+      setRoll(0);
+
+      const keyPressStates = {
+        w: false,
+        s: false,
+        ArrowUp: false,
+        ArrowDown: false,
+        ArrowLeft: false,
+        ArrowRight: false,
+      };
+
+      let previousTime = Date.now();
+
+      function onUpdate() {
+        const now = Date.now();
+        const dt = (now - previousTime) / 1000;
+        previousTime = now;
+
+        if (keyPressStates.w) {
+          setThreshold(throttle + dt);
+        }
+        if (keyPressStates.s) {
+          setThreshold(throttle - dt);
+        }
+        if (keyPressStates.ArrowUp) {
+          setPitch(pitch + dt);
+        }
+        if (keyPressStates.ArrowDown) {
+          setPitch(pitch - dt);
+        }
+        if (keyPressStates.ArrowLeft) {
+          setRoll(roll - dt);
+        }
+        if (keyPressStates.ArrowRight) {
+          setRoll(roll + dt);
+        }
+
+        // Slowly decrease pitch and roll
+        setPitch(pitch * 0.99);
+        setRoll(roll * 0.99);
+      }
+
+      function forceReset() {
+        setThreshold(0);
+        setPitch(0);
+        setRoll(0);
+      }
+
+      function onKeyDown(event) {
+        console.log(event.keyCode);
+        let key;
+        if (event.keyCode == 87) key = "w";
+        if (event.keyCode == 83) key = "s";
+        if (event.keyCode == 38) key = "ArrowUp";
+        if (event.keyCode == 40) key = "ArrowDown";
+        if (event.keyCode == 37) key = "ArrowLeft";
+        if (event.keyCode == 39) key = "ArrowRight";
+
+        if (key in keyPressStates) {
+          keyPressStates[key] = true;
+          event.preventDefault();
+        }
+
+        // Force reset on space
+        if (event.key === " ") {
+          forceReset();
+        }
+      }
+
+      function onKeyUp(event) {
+        let key;
+        if (event.keyCode == 87) key = "w";
+        if (event.keyCode == 83) key = "s";
+        if (event.keyCode == 38) key = "ArrowUp";
+        if (event.keyCode == 40) key = "ArrowDown";
+        if (event.keyCode == 37) key = "ArrowLeft";
+        if (event.keyCode == 39) key = "ArrowRight";
+
+        if (key in keyPressStates) {
+          keyPressStates[key] = false;
+          event.preventDefault();
+        }
+      }
+
+      window.addEventListener("keydown", onKeyDown);
+      window.addEventListener("keyup", onKeyUp);
+      setInterval(onUpdate, 1000 / 60);
+
+      // Server communication
+
+      async function command(command) {
+        const commandString = JSON.stringify(command);
+        const response = await fetch(`/api?data=${commandString}`);
+        const data = await response.json();
+        return data;
+      }
+
+      async function connectToPort(port) {
+        await command({ command: "connect", port });
+        await updatePortList();
+      }
+
+      async function disconnectFromPort() {
+        await command({ command: "disconnect" });
+        await updatePortList();
+      }
+
+      async function updatePortList() {
+        const ports = await command({ command: "ports" });
+        const currentPort = await command({ command: "port" });
+
+        portList.innerHTML = "";
+        if (ports.length > 0) {
+          ports.forEach((port) => {
+            const li = document.createElement("li");
+            li.textContent = port;
+            li.style.cursor = "pointer";
+            if (port === currentPort) {
+              li.style.fontWeight = "bold";
+              li.addEventListener("click", () => {
+                disconnectFromPort();
+              });
+            } else {
+              li.addEventListener("click", () => {
+                connectToPort(port);
+              });
+            }
+            portList.appendChild(li);
+          });
+        } else {
+          const li = document.createElement("li");
+          li.textContent = "No ports available";
+          portList.appendChild(li);
+        }
+      }
+
+      async function updateLog() {
+        const log = await command({ command: "log" });
+        logTag.textContent = log.join("\n");
+      }
+
+      let previousData = {
+        throttle: 0,
+        pitch: 0,
+        roll: 0,
+      };
+
+      async function sendToServer() {
+        const currentData = {
+          throttle: Math.round(throttle * 100) / 100,
+          pitch: Math.round(pitch * 100) / 100,
+          roll: Math.round(roll * 100) / 100,
+        };
+
+        if (currentData.throttle !== previousData.throttle) {
+          await command({ command: "throttle", value: currentData.throttle });
+          previousData.throttle = currentData.throttle;
+        }
+
+        if (currentData.pitch !== previousData.pitch) {
+          await command({ command: "pitch", value: currentData.pitch });
+          previousData.pitch = currentData.pitch;
+        }
+
+        if (currentData.roll !== previousData.roll) {
+          await command({ command: "roll", value: currentData.roll });
+          previousData.roll = currentData.roll;
+        }
+      }
+
+      updatePortList();
+      setInterval(updateLog, 1000);
+      setInterval(updatePortList, 1000);
+      setInterval(sendToServer, 100);
+    </script>
+  </body>
+</html>
