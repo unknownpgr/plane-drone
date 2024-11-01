@@ -125,6 +125,100 @@
       const portList = document.getElementById("portList");
       const logTag = document.getElementById("logTag");
 
+      // Server communication
+
+      async function command(command) {
+        const commandString = JSON.stringify(command);
+        const response = await fetch(`/api?data=${commandString}`);
+        const data = await response.json();
+        return data;
+      }
+
+      async function connectToPort(port) {
+        await command({ command: "connect", port });
+      }
+
+      async function disconnectFromPort() {
+        await command({ command: "disconnect" });
+      }
+
+      let previousData = {
+        throttle: 0,
+        pitch: 0,
+        roll: 0,
+      };
+
+      async function sendCommandToServer({ throttle, pitch, roll }) {
+        const currentData = {
+          throttle: Math.round(throttle * 100) / 100,
+          pitch: Math.round(pitch * 100) / 100,
+          roll: Math.round(roll * 100) / 100,
+        };
+
+        if (currentData.throttle !== previousData.throttle) {
+          await command({ command: "throttle", value: currentData.throttle });
+          previousData.throttle = currentData.throttle;
+        }
+
+        if (currentData.pitch !== previousData.pitch) {
+          await command({ command: "pitch", value: currentData.pitch });
+          previousData.pitch = currentData.pitch;
+        }
+
+        if (currentData.roll !== previousData.roll) {
+          await command({ command: "roll", value: currentData.roll });
+          previousData.roll = currentData.roll;
+        }
+      }
+
+      async function updateLoop() {
+        const onUpdate = ({
+          ports: availablePorts,
+          port: currentPort,
+          logs,
+        }) => {
+          // Update logs
+          logTag.textContent = logs.join("\n");
+
+          // Update port list
+          portList.innerHTML = "";
+          if (availablePorts.length > 0) {
+            availablePorts.forEach((port) => {
+              const li = document.createElement("li");
+              li.textContent = port;
+              li.style.cursor = "pointer";
+              if (port === currentPort) {
+                li.style.fontWeight = "bold";
+                li.addEventListener("click", () => {
+                  disconnectFromPort();
+                });
+              } else {
+                li.addEventListener("click", () => {
+                  connectToPort(port);
+                });
+              }
+              portList.appendChild(li);
+            });
+          } else {
+            const li = document.createElement("li");
+            li.textContent = "No ports available";
+            portList.appendChild(li);
+          }
+        };
+
+        while (true) {
+          try {
+            onUpdate(await command({ command: "status" }));
+          } catch (e) {
+            console.log(e);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        }
+      }
+      updateLoop();
+
+      // Keyboard control
+
       let throttle = 0;
       let pitch = 0;
       let roll = 0;
@@ -210,6 +304,8 @@
         // Slowly decrease pitch and roll
         setPitch(pitch * 0.99);
         setRoll(roll * 0.99);
+
+        sendCommandToServer({ throttle, pitch, roll });
       }
 
       function forceReset() {
@@ -256,94 +352,7 @@
 
       window.addEventListener("keydown", onKeyDown);
       window.addEventListener("keyup", onKeyUp);
-      setInterval(onUpdate, 1000 / 60);
-
-      // Server communication
-
-      async function command(command) {
-        const commandString = JSON.stringify(command);
-        const response = await fetch(`/api?data=${commandString}`);
-        const data = await response.json();
-        return data;
-      }
-
-      async function connectToPort(port) {
-        await command({ command: "connect", port });
-        await updatePortList();
-      }
-
-      async function disconnectFromPort() {
-        await command({ command: "disconnect" });
-        await updatePortList();
-      }
-
-      async function updatePortList() {
-        const ports = await command({ command: "ports" });
-        const currentPort = await command({ command: "port" });
-
-        portList.innerHTML = "";
-        if (ports.length > 0) {
-          ports.forEach((port) => {
-            const li = document.createElement("li");
-            li.textContent = port;
-            li.style.cursor = "pointer";
-            if (port === currentPort) {
-              li.style.fontWeight = "bold";
-              li.addEventListener("click", () => {
-                disconnectFromPort();
-              });
-            } else {
-              li.addEventListener("click", () => {
-                connectToPort(port);
-              });
-            }
-            portList.appendChild(li);
-          });
-        } else {
-          const li = document.createElement("li");
-          li.textContent = "No ports available";
-          portList.appendChild(li);
-        }
-      }
-
-      async function updateLog() {
-        const log = await command({ command: "log" });
-        logTag.textContent = log.join("\n");
-      }
-
-      let previousData = {
-        throttle: 0,
-        pitch: 0,
-        roll: 0,
-      };
-
-      async function sendToServer() {
-        const currentData = {
-          throttle: Math.round(throttle * 100) / 100,
-          pitch: Math.round(pitch * 100) / 100,
-          roll: Math.round(roll * 100) / 100,
-        };
-
-        if (currentData.throttle !== previousData.throttle) {
-          await command({ command: "throttle", value: currentData.throttle });
-          previousData.throttle = currentData.throttle;
-        }
-
-        if (currentData.pitch !== previousData.pitch) {
-          await command({ command: "pitch", value: currentData.pitch });
-          previousData.pitch = currentData.pitch;
-        }
-
-        if (currentData.roll !== previousData.roll) {
-          await command({ command: "roll", value: currentData.roll });
-          previousData.roll = currentData.roll;
-        }
-      }
-
-      updatePortList();
-      setInterval(updateLog, 1000);
-      setInterval(updatePortList, 1000);
-      setInterval(sendToServer, 100);
+      setInterval(onUpdate, 10);
     </script>
   </body>
 </html>

@@ -87,6 +87,14 @@ class DroneControllerService:
         data = magic_bytes + data + checksum
         os.write(self.fd, data)
 
+    def add_listener(self, listener):
+        self.listeners.append(listener)
+        
+        def remove_listener():
+            self.listeners.remove(listener)
+
+        return remove_listener
+
     def list_ports(self):
         return self.available_ports
 

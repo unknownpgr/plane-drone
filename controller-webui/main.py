@@ -1,4 +1,5 @@
 import os
+from threading import Event
 from server import SimpleHTTPApiStaticServer
 from service import DroneControllerService
 
@@ -7,11 +8,32 @@ HTML_DIR = os.path.join(os.path.dirname(__file__), "html")
 
 controller = DroneControllerService()
 
+ports = controller.list_ports()
+port = controller.get_port()
+logs = controller.get_hw_logs()
+update_event = Event()
+
+def update_state():
+    global ports, port, logs, is_updated
+    ports = controller.list_ports()
+    port = controller.get_port()
+    logs = controller.get_hw_logs()
+    update_event.set()
+
+controller.add_listener(update_state)
+
 def callback(data):
     command = data["command"]
 
-    if command == "ports":
-        return controller.list_ports()
+    if command == "status":
+        update_event.wait(timeout=5)
+        update_event.clear()
+        return {
+            "status": "ok",
+            "ports": ports,
+            "port": port,
+            "logs": logs
+        }
     
     if command == "connect":
         serial_port = data["port"]
