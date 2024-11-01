@@ -21,7 +21,6 @@ void setup()
   radio.enableAckPayload();
   Serial.println("Radio enabled.");
   Serial.println("Controller ready.");
-  Serial.write(0x80);
 
   SerialState serialState;
   serialState.state = STATE_IDLE;
