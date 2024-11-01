@@ -6,17 +6,23 @@ import select
 class DroneControllerService:
 
     def __init__(self):
+        self.available_ports = []
         self.serial_port = None
         self.fd = None
         self.hw_log_bytes = b""
         self.hw_logs = []
-        self.hw_logs_thread = Thread(target=self.__read_hw_logs)
-        self.hw_logs_thread.start()
+        self.listeners = []
+        Thread(target=self.__task_read_hw_logs).start()
+        Thread(target=self.__task_update_serial_ports).start()
+
+    def __notify(self):
+        for listener in self.listeners:
+            listener()
 
     def __del__(self):
         self.disconnect()
 
-    def __read_hw_logs(self):
+    def __task_read_hw_logs(self):
         while True:
             if self.fd is None:
                 time.sleep(0.1)
@@ -36,8 +42,27 @@ class DroneControllerService:
 
                 while len(self.hw_logs) > 32:
                     self.hw_logs.pop(0)
+
+                self.__notify()
             except Exception as e:
                 print(f"Error reading hardware logs: {e}")
+
+    def __task_update_serial_ports(self):
+        while True:
+            devices = os.listdir("/dev")
+            serial_ports = []
+            for device in devices:
+                if (
+                    device.startswith("ttyUSB")
+                    or device.startswith("ttyACM")
+                    or device.startswith("cu.usb")
+                ):
+                    serial_ports.append(f"/dev/{device}")
+            serial_ports.sort()
+            if serial_ports != self.available_ports:
+                self.available_ports = serial_ports
+                self.__notify()
+            time.sleep(1.0)
 
     def __write(self, data):
         if self.fd is None:
@@ -63,18 +88,7 @@ class DroneControllerService:
         os.write(self.fd, data)
 
     def list_ports(self):
-        devices = os.listdir("/dev")
-        serial_ports = []
-
-        for device in devices:
-            if (
-                device.startswith("ttyUSB")
-                or device.startswith("ttyACM")
-                or device.startswith("cu.usb")
-            ):
-                serial_ports.append(f"/dev/{device}")
-
-        return serial_ports
+        return self.available_ports
 
     def get_port(self):
         return self.serial_port
@@ -87,12 +101,14 @@ class DroneControllerService:
         self.serial_port = serial_port
         self.fd = os.open(serial_port, os.O_RDWR | os.O_NOCTTY)
         self.set_baud_rate(9600)
+        self.__notify()
 
     def disconnect(self):
         if self.fd is not None:
             os.close(self.fd)
             self.fd = None
             self.serial_port = None
+            self.__notify()
 
     def set_baud_rate(self, baud_rate):
         os.system(f"stty -F {self.serial_port} {baud_rate}")
