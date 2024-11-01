@@ -87,8 +87,8 @@ class SimpleHTTPApiStaticServer:
         self.html_dir = html_dir
 
     def start(self):
-        socketserver.TCPServer.allow_reuse_address = True
-        with socketserver.TCPServer(("", self.port), lambda *args, **kwargs: SimpleHTTPRequestHandler(*args, callback=self.callback,
+        socketserver.ThreadingTCPServer.allow_reuse_address = True
+        with socketserver.ThreadingTCPServer(("", self.port), lambda *args, **kwargs: SimpleHTTPRequestHandler(*args, callback=self.callback,
                                                                                                          html_dir=self.html_dir ,
                                                                                                        **kwargs)) as httpd:
             try:
