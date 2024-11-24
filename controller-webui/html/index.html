@@ -7,6 +7,7 @@
     <style>
       * {
         box-sizing: border-box;
+        color: #333;
       }
 
       head,
@@ -34,7 +35,7 @@
       .value {
         width: 0;
         flex-grow: 1;
-        border: solid 1px #000000;
+        border: solid 1px #333;
       }
 
       .label {
@@ -44,8 +45,8 @@
 
       .box {
         height: 10rem;
-        border-top: solid 1px #000000;
-        border-bottom: solid 1px #000000;
+        border-top: solid 1px #333;
+        border-bottom: solid 1px #333;
       }
 
       .value-label {
@@ -56,25 +57,33 @@
       #logTag {
         margin-top: 1rem;
         padding: 1rem;
-        border: solid 1px #000000;
+        border: solid 1px #333;
         white-space: pre;
+      }
+
+      .spacer {
+        flex-grow: 1;
+      }
+
+      footer {
+        margin-top: 2rem;
+        text-align: center;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>Flight Controller</h1>
-      <div>
-        <h2>Available Ports</h2>
-        <ul id="portList"></ul>
-      </div>
+      <h2>Available Ports</h2>
+      <ul id="portList"></ul>
+      <h2>Control</h2>
       <div class="frame">
         <div class="value">
           <div class="label">Throttle</div>
           <div class="box" style="display: flex; align-items: flex-end">
             <div
               id="throttleTag"
-              style="background-color: #000; width: 100%"
+              style="background-color: #333; width: 100%"
             ></div>
           </div>
           <div class="value-label" id="throttleValueTag"></div>
@@ -87,7 +96,7 @@
               style="
                 position: absolute;
                 left: 0;
-                background-color: #000;
+                background-color: #333;
                 width: 100%;
               "
             ></div>
@@ -107,13 +116,18 @@
           >
             <div
               id="rollTag"
-              style="width: 200rem; background-color: #000"
+              style="width: 200rem; background-color: #333"
             ></div>
           </div>
           <div class="value-label" id="rollValueTag"></div>
         </div>
       </div>
+      <h2>Log</h2>
       <div id="logTag">No log</div>
+      <div class="spacer"></div>
+      <footer>
+        <p>© 2024 Unknownpgr</p>
+      </footer>
     </div>
     <script>
       const throttleTag = document.getElementById("throttleTag");

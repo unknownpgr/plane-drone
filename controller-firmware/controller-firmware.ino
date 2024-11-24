@@ -16,7 +16,7 @@ void setup()
   Serial.println("\n\nController started.");
   radio.begin();
   radio.openWritingPipe(address);
-  radio.setPALevel(RF24_PA_MIN);
+  radio.setPALevel(RF24_PA_MAX);
   radio.enableAckPayload();
   Serial.println("Radio enabled.");
   Serial.println("Controller ready.");
