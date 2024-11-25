@@ -1,4 +1,5 @@
 #include "core/actuator.h"
+#include "core/timer.h"
 #include <avr/io.h>
 
 void actuator_init()
@@ -17,6 +18,11 @@ void actuator_init()
     OCR1A = 1500;
     OCR1B = 1500;
     OCR1C = 1500;
+
+    // Initialize the BLDC motor
+    actuator_setThrottle(1.f);
+    timer_sleep(2000);
+    actuator_setThrottle(0.f);
 }
 
 void actuator_setThrottle(float value)
