@@ -22,8 +22,8 @@ SOURCES += $(wildcard src/core/*.c)
 SOURCES += $(wildcard src/atmega128/*.c)
 OBJECTS = $(patsubst src/%.c,$(BUILD_DIR)/%.o,$(SOURCES))
 
-# Rules
-all: $(TARGET) $(BUILD_DIR)/$(PROJECT).hex $(BUILD_DIR)/$(PROJECT).eep $(BUILD_DIR)/$(PROJECT).lss
+# Rules (NOTE: it will always clean and rebuild)
+all: clean $(TARGET) $(BUILD_DIR)/$(PROJECT).hex $(BUILD_DIR)/$(PROJECT).eep $(BUILD_DIR)/$(PROJECT).lss
 
 # ==============================================================================
 

@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <string.h>
 #include "core/actuator.h"
 #include "core/communication.h"
 #include "core/imu.h"
@@ -23,13 +24,8 @@ void l(const char *format, ...)
   printf("\r\n");
 }
 
-int main()
+void mode_flight()
 {
-  // Initialization
-  communication_init();
-  actuator_init();
-  imu_init();
-  timer_init();
 
   State state;
   IMUData imuData;
@@ -99,6 +95,39 @@ int main()
 
     actuator_setFlapLeft(flapLeft);
     actuator_setFlapRight(flapRight);
+  }
+}
+
+void mode_test()
+{
+  // Print IMU data
+  IMUData imuData;
+  while (true)
+  {
+    imu_read(&imuData);
+    l("ax: %f, ay: %f, az: %f, gx: %f, gy: %f, gz: %f", imuData.ax, imuData.ay, imuData.az, imuData.gx, imuData.gy, imuData.gz);
+  }
+}
+
+int main()
+{
+  // Initialization
+  communication_init();
+  actuator_init();
+  imu_init();
+  timer_init();
+
+  char buffer[64];
+  communication_receive_serial(buffer, 4);
+
+  if (strcmp(buffer, "FLYT") == 0)
+  {
+    mode_flight();
+  }
+
+  if (strcmp(buffer, "TEST") == 0)
+  {
+    mode_test();
   }
 
   while (true)

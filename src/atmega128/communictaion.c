@@ -33,6 +33,11 @@ void communication_send_serial(const char *format, ...)
     uart_write((uint8_t *)buffer, (uint32_t)strlen(buffer));
 }
 
+void communication_receive_serial(char *buffer, uint32_t size)
+{
+    uart_read((uint8_t *)buffer, size);
+}
+
 void communication_send_radio(const char *format, ...)
 {
 }
