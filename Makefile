@@ -1,8 +1,8 @@
 # Project Information
 PROJECT = kit-jt20-drone
+BUILD_DIR = build
 TARGET = $(BUILD_DIR)/$(PROJECT).elf
 MCU = atmega128
-BUILD_DIR = build
 
 # Toolchain
 CC = avr-gcc
