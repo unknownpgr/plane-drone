@@ -1,4 +1,4 @@
-#include "core-pose.hpp"
+#include "core/pose.h"
 #include <math.h>
 
 void initializeState(State *state)

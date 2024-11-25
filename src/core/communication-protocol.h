@@ -49,7 +49,7 @@ type
 RadioProtocol;
 
 // This is to ensure that the size of RadioProtocol is 32 bytes
-static_assert(sizeof(RadioProtocol) == 32, "RadioProtocol size is not 32 bytes");
+typedef char static_assertion[sizeof(RadioProtocol) == 32 ? 1 : -1];
 
 #undef type
 #pragma pack(pop)

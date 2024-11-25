@@ -2,14 +2,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "communication-protocol.h"
 
-#define RADIO_MODE_RECEIVE 0
-#define RADIO_MODE_TRANSMIT 1
+void communication_init();
 
-void radio_init(uint8_t mode);
-bool radio_receive(uint8_t *data);
-void radio_send(uint8_t *data);
-
-void serial_init();
-int serial_read(uint8_t *data, int len);
-void serial_write(uint8_t *data, int len);
+void communication_send_serial(const char *format, ...);
+void communication_send_radio(const char *format, ...);
+bool communication_receive_radio(RadioProtocol *protocol);
+void communication_send_ack(uint8_t *bytes, uint8_t size);

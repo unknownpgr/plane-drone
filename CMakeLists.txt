@@ -8,7 +8,6 @@ project(drone C CXX ASM)
 
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(INC_DIR ${SRC_DIR})
-file(GLOB SOURCE_ARDUINO ${SRC_DIR}/arduino/*.c)
 file(GLOB SOURCE_PICO ${SRC_DIR}/pico/*.c)
 set(SOURCES
     ${SRC_DIR}/main.c
