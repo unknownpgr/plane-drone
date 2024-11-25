@@ -17,6 +17,11 @@ void uart_init(uint32_t baudrate)
     UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
 }
 
+bool uart_available()
+{
+    return UCSR0A & (1 << RXC0);
+}
+
 void uart_write(uint8_t *data, uint32_t len)
 {
     for (uint32_t i = 0; i < len; i++)
