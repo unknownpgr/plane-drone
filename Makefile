@@ -10,12 +10,10 @@ CPP = avr-g++
 
 # Flags
 COMMON = -mmcu=$(MCU)
-CFLAGS = $(COMMON) -Wall -std=gnu99 -Os -Wl,-u,vfprintf -lprintf_flt -lm
-LDFLAGS = $(COMMON) -Wl,-u,vfprintf,-Map=$(BUILD_DIR)/$(PROJECT).map
+CFLAGS = $(COMMON) -Wall -std=c99 -Os
+LDFLAGS = $(COMMON) -Wl,-u,vfprintf,-Map=$(BUILD_DIR)/$(PROJECT).map,--trace
 
 # Libraries and Directories
-LIBS = -lm -lprintf_flt
-LIBDIRS =
 INCLUDES = -I./src
 
 # Source / object Files
@@ -31,13 +29,13 @@ all: $(TARGET) $(BUILD_DIR)/$(PROJECT).hex $(BUILD_DIR)/$(PROJECT).eep $(BUILD_D
 
 # Link Rule
 $(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBDIRS) $(LIBS)
-	@echo -e "\033[0;32mCompilation Successful\033[0m"
+	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBDIRS)
+	@echo -e "\n\n\033[1;32mBuild Successful!\033[0m\n"
 
 # Compile Rule
 $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c -o $@ $< $(INCLUDES) $(LIBDIRS) $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 # ==============================================================================
 	
