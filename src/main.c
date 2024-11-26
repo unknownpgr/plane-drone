@@ -12,20 +12,7 @@
 #define PI 3.14159265358979323846
 #define printf communication_send_serial
 
-void l(const char *format, ...)
-{
-  static uint32_t timestamp = 0;
-  uint16_t currentTime = timer_micros();
-  timestamp += (uint16_t)(currentTime - timestamp);
-  printf("[%u] ", (timestamp / 1000));
-  va_list args;
-  va_start(args, format);
-  printf(format, args);
-  va_end(args);
-  printf("\r\n");
-}
-
-void mode_flight()
+static void mode_flight()
 {
 
   State state;
@@ -99,41 +86,30 @@ void mode_flight()
   }
 }
 
-void mode_test()
+static void mode_test()
 {
   // Print IMU data
   IMUData imuData;
   while (true)
   {
     imu_read(&imuData);
-    l("ax: %f, ay: %f, az: %f, gx: %f, gy: %f, gz: %f", imuData.ax, imuData.ay, imuData.az, imuData.gx, imuData.gy, imuData.gz);
+    communication_send_serial("ax:%d,ay:%d,az:%d,gx:%d,gy:%d,gz:%d\r\n", (int)(imuData.ax * 100), (int)(imuData.ay * 100), (int)(imuData.az * 100), (int)(imuData.gx * 100), (int)(imuData.gy * 100), (int)(imuData.gz * 100));
   }
 }
 
 int main()
 {
   // Initialization
+  util_init();
+  timer_init();
   communication_init();
   actuator_init();
-  imu_init();
-  timer_init();
-  util_init();
-
   util_set_led(true);
+  imu_init();
+
   communication_send_serial("DEVICE READY");
-
-  char buffer[64];
-  communication_receive_serial(buffer, 4);
-
-  if (strcmp(buffer, "FLYT") == 0)
-  {
-    mode_flight();
-  }
-
-  if (strcmp(buffer, "TEST") == 0)
-  {
-    mode_test();
-  }
+  // mode_flight();
+  mode_test();
 
   while (true)
     ;
