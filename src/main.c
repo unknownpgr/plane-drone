@@ -7,6 +7,7 @@
 #include "core/imu.h"
 #include "core/pose.h"
 #include "core/timer.h"
+#include "core/util.h"
 
 #define PI 3.14159265358979323846
 #define printf communication_send_serial
@@ -116,6 +117,10 @@ int main()
   actuator_init();
   imu_init();
   timer_init();
+  util_init();
+
+  util_set_led(true);
+  communication_send_serial("DEVICE READY");
 
   char buffer[64];
   communication_receive_serial(buffer, 4);
