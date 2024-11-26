@@ -25,7 +25,7 @@ bool util_check_jumper()
   return gpio_get(PIN_JUMPER) == 0;
 }
 
-void util_delay(uint32_t ms)
+void util_delay_ms(uint32_t ms)
 {
   sleep_ms(ms);
 }

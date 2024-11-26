@@ -14,4 +14,4 @@ bool util_check_jumper();
 /**
  * Delay for a given number of milliseconds
  */
-void util_delay(uint32_t ms);
+void util_delay_ms(uint32_t ms);
