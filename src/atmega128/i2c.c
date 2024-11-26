@@ -3,8 +3,7 @@
 
 #define F_CPU 16000000UL // MCU 클럭 속도
 #define F_SCL 100000UL   // I2C 클럭 속도
-#define Prescaler 1
-#define TWBR_VAL (((F_CPU / F_SCL) - 16) / (2 * Prescaler))
+#define TWBR_VAL (((F_CPU / F_SCL) - 16) / 2)
 
 void i2c_init(void)
 {

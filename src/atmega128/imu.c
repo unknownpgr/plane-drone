@@ -21,12 +21,16 @@ void imu_read(IMUData *data)
     i2c_write(ACCEL_XOUT_H);
     i2c_start((MPU6050_ADDR << 1) | 1);
 
-    int16_t ax = (i2c_read_ack() << 8) | i2c_read_ack();
-    int16_t ay = (i2c_read_ack() << 8) | i2c_read_ack();
-    int16_t az = (i2c_read_ack() << 8) | i2c_read_ack();
-    int16_t gx = (i2c_read_ack() << 8) | i2c_read_ack();
-    int16_t gy = (i2c_read_ack() << 8) | i2c_read_ack();
-    int16_t gz = (i2c_read_nack() << 8) | i2c_read_nack();
+    int16_t ax = ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
+    int16_t ay = ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
+    int16_t az = ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
+
+    // Temp (Not used)
+    ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
+
+    int16_t gx = ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
+    int16_t gy = ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
+    int16_t gz = ((uint16_t)(i2c_read_nack()) << 8) | (uint16_t)(i2c_read_nack());
 
     data->ax = ax * 4.0 / 32768.0;
     data->ay = ay * 4.0 / 32768.0;
