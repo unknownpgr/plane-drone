@@ -26,7 +26,8 @@ void imu_read(IMUData *data)
     int16_t az = ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
 
     // Temp (Not used)
-    ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
+    i2c_read_ack();
+    i2c_read_ack();
 
     int16_t gx = ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
     int16_t gy = ((uint16_t)(i2c_read_ack()) << 8) | (uint16_t)(i2c_read_ack());
