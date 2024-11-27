@@ -8,22 +8,28 @@
 
 RF24 radio(PIN_NRF_CE, PIN_NRF_CSN);
 
-const byte address[6] = "00001";
+uint8_t address[5] = "00001";
 
 void setup()
 {
   Serial.begin(9600);
   Serial.println("\n\nController started.");
   radio.begin();
+  radio.powerUp();
   radio.openWritingPipe(address);
   radio.setPALevel(RF24_PA_MAX);
   radio.enableAckPayload();
-  Serial.println("Radio enabled.");
+  radio.setChannel(76);
+  uint8_t channel = radio.getChannel();
+  Serial.print("Radio enabled at channel ");
+  Serial.print(channel);
+  Serial.println(".");
   Serial.println("Controller ready.");
 
   SerialState serialState;
   serialState.state = STATE_IDLE;
   uint8_t data[10];
+  uint8_t counter = 0;
 
   while (true)
   {
@@ -42,6 +48,9 @@ void setup()
           }
           Serial.println();
         }
+        counter++;
+        Serial.print("SENT:");
+        Serial.println(counter);
       }
     }
   }
