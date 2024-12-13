@@ -86,7 +86,7 @@ static void mode_flight()
   }
 }
 
-static void mode_test()
+static void mode_test_imu()
 {
   // Print IMU data
   IMUData imuData;
@@ -94,6 +94,35 @@ static void mode_test()
   {
     imu_read(&imuData);
     communication_send_serial("ax:%d,ay:%d,az:%d,gx:%d,gy:%d,gz:%d\r\n", (int)(imuData.ax * 100), (int)(imuData.ay * 100), (int)(imuData.az * 100), (int)(imuData.gx * 100), (int)(imuData.gy * 100), (int)(imuData.gz * 100));
+  }
+}
+
+static void mode_test_radio_communication()
+{
+  RadioProtocol packet;
+  while (true)
+  {
+    if (communication_receive_radio(&packet))
+    {
+      switch (packet.command)
+      {
+      case COMMAND_PING:
+        communication_send_serial("PING\r\n");
+        break;
+      case COMMAND_THROTTLE:
+        communication_send_serial("THROTTLE: %d\r\n", packet.throttle.throttle);
+        break;
+      case COMMAND_PITCH:
+        communication_send_serial("PITCH: %d\r\n", packet.pitch.pitch);
+        break;
+      case COMMAND_ROLL:
+        communication_send_serial("ROLL: %d\r\n", packet.roll.roll);
+        break;
+      default:
+        communication_send_serial("UNKNOWN\r\n");
+        break;
+      }
+    }
   }
 }
 
@@ -109,7 +138,8 @@ int main()
 
   communication_send_serial("DEVICE READY");
   // mode_flight();
-  mode_test();
+  // mode_test_imu();
+  mode_test_radio_communication();
 
   while (true)
     ;
