@@ -67,3 +67,6 @@ PORT = /dev/cu.usbserial-0001
 # Upload Rule
 upload:
 	avrdude -p $(MCU) -c $(PROGRAMMER) -P $(PORT) -U flash:w:$(BUILD_DIR)/$(PROJECT).hex
+
+monitor:
+	screen $(PORT) 9600
