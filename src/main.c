@@ -20,7 +20,7 @@ static void mode_flight()
   EulerAngle omega; // Unit: rad/s
   EulerAngle accel; // Unit: m/s^2
   uint16_t lastTime = timer_micros();
-  RadioProtocol packet;
+  ControllerData control;
 
   float commandPitch = 0;
   float commandRoll = 0;
@@ -30,29 +30,12 @@ static void mode_flight()
   while (true)
   {
     // Read command
-    if (communication_receive_radio(&packet))
+    if (communication_receive_radio(&control))
     {
-      switch (packet.command)
-      {
-      case COMMAND_PING:
-        communication_send_ack((uint8_t *)"PING", 4);
-        break;
-      case COMMAND_THROTTLE:
-        communication_send_ack((uint8_t *)"THROTTLE", 8);
-        actuator_setThrottle((float)(packet.throttle.throttle / 65535.f));
-        break;
-      case COMMAND_PITCH:
-        communication_send_ack((uint8_t *)"PITCH", 5);
-        commandPitch = (float)(packet.pitch.pitch * (90.f / 32767.f)) - 90.f;
-        break;
-      case COMMAND_ROLL:
-        communication_send_ack((uint8_t *)"ROLL", 4);
-        commandRoll = (float)(packet.roll.roll * (90.f / 32767.f)) - 90.0f;
-        break;
-      default:
-        communication_send_ack((uint8_t *)"UNKNOWN", 7);
-        break;
-      }
+      uint16_t throttle = control.throttle;
+      uint16_t pitch = control.pitch;
+      uint16_t roll = control.roll;
+      uint16_t checksum = control.checksum;
     }
 
     imu_read(&imuData);
@@ -99,29 +82,23 @@ static void mode_test_imu()
 
 static void mode_test_radio_communication()
 {
-  RadioProtocol packet;
+  ControllerData control;
   while (true)
   {
-    if (communication_receive_radio(&packet))
+    if (!communication_receive_radio(&control))
     {
-      switch (packet.command)
-      {
-      case COMMAND_PING:
-        communication_send_serial("PING\r\n");
-        break;
-      case COMMAND_THROTTLE:
-        communication_send_serial("THROTTLE: %d\r\n", packet.throttle.throttle);
-        break;
-      case COMMAND_PITCH:
-        communication_send_serial("PITCH: %d\r\n", packet.pitch.pitch);
-        break;
-      case COMMAND_ROLL:
-        communication_send_serial("ROLL: %d\r\n", packet.roll.roll);
-        break;
-      default:
-        communication_send_serial("UNKNOWN\r\n");
-        break;
-      }
+      continue;
+    }
+
+    communication_send_serial("throttle:%04d, pitch:%04d, roll:%04d, checksum:%04d / ", control.throttle, control.pitch, control.roll, control.checksum);
+    uint16_t checksum = control.throttle + control.pitch + control.roll;
+    if (checksum == control.checksum)
+    {
+      communication_send_serial("Checksum OK\r\n");
+    }
+    else
+    {
+      communication_send_serial("Checksum Error\r\n");
     }
   }
 }
@@ -136,7 +113,7 @@ int main()
   util_set_led(true);
   imu_init();
 
-  communication_send_serial("DEVICE READY");
+  communication_send_serial("DEVICE READY\r\n");
   // mode_flight();
   // mode_test_imu();
   mode_test_radio_communication();

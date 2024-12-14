@@ -38,9 +38,10 @@ void communication_send_radio(const char *format, ...)
 {
 }
 
-bool communication_receive_radio(RadioProtocol *protocol)
+bool communication_receive_radio(ControllerData *protocol)
 {
-    return !!nrf24_receive((uint8_t *)protocol, sizeof(RadioProtocol));
+    ControllerDataUnion *data = (ControllerDataUnion *)protocol;
+    return !!nrf24_receive((uint8_t *)data->bytes, sizeof(ControllerData));
 }
 
 void communication_send_ack(uint8_t *bytes, uint8_t size)
