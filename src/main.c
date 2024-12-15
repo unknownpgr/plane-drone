@@ -24,18 +24,50 @@ static void mode_flight()
 
   float commandPitch = 0;
   float commandRoll = 0;
+  float commandThrottle = 0;
 
   initializeState(&state);
 
+  uint16_t deadmanSwitchDefault = 600;
+  uint16_t deadmanSwitch = deadmanSwitchDefault;
+
   while (true)
   {
+    util_set_led(true);
+    if (deadmanSwitch > 0)
+    {
+      deadmanSwitch--;
+    }
+    else
+    {
+      // If deadman switch is activated, stop the motor and wait for the radio signal
+      actuator_setThrottle(0);
+      actuator_setFlapLeft(0);
+      actuator_setFlapRight(0);
+      util_set_led(false);
+      communication_send_serial("DEADMAN SWITCH ACTIVATED\r\n");
+
+      while (true)
+      {
+        if (communication_receive_radio(&control))
+        {
+          deadmanSwitch = deadmanSwitchDefault;
+          break;
+        }
+      }
+    }
+
     // Read command
     if (communication_receive_radio(&control))
     {
       uint16_t throttle = control.throttle;
       uint16_t pitch = control.pitch;
       uint16_t roll = control.roll;
-      uint16_t checksum = control.checksum;
+
+      commandThrottle = throttle / 1023.f;
+      commandPitch = (pitch - 512.f) * 90.f / 512.f;
+      commandRoll = (roll - 512.f) * 90.f / 512.f;
+      deadmanSwitch = deadmanSwitchDefault;
     }
 
     imu_read(&imuData);
@@ -56,16 +88,17 @@ static void mode_flight()
 
     estimateByComplementaryFilter(&state, &omega, &accel, dt, &state);
 
-    float flapLeft = (state.pitch + state.roll) * 180.0 / PI - commandPitch - commandRoll;
-    float flapRight = (state.pitch - state.roll) * 180.0 / PI - commandPitch + commandRoll;
+    float flapLeft = (state.pitch + state.roll) * 180.0 / PI + commandPitch + commandRoll;
+    float flapRight = (state.pitch - state.roll) * 180.0 / PI + commandPitch - commandRoll;
 
     flapLeft = flapLeft > 60 ? 60 : flapLeft;
     flapLeft = flapLeft < -60 ? -60 : flapLeft;
     flapRight = flapRight > 60 ? 60 : flapRight;
     flapRight = flapRight < -60 ? -60 : flapRight;
 
-    actuator_setFlapLeft(flapLeft);
-    actuator_setFlapRight(flapRight);
+    actuator_setThrottle(commandThrottle);
+    actuator_setFlapLeft(+flapLeft);
+    actuator_setFlapRight(-flapRight);
   }
 }
 
@@ -114,9 +147,9 @@ int main()
   imu_init();
 
   communication_send_serial("DEVICE READY\r\n");
-  // mode_flight();
+  mode_flight();
   // mode_test_imu();
-  mode_test_radio_communication();
+  // mode_test_radio_communication();
 
   while (true)
     ;
