@@ -26,28 +26,34 @@ typedef union
 void setup()
 {
   // Initialize serial
-  Serial.begin(9600);
-  Serial.println("\n\nController started.");
+  {
+    Serial.begin(9600);
+    Serial.println("\n\nController started.");
+  }
 
   // Initialize radio
   RF24 radio(PIN_NRF_CE, PIN_NRF_CSN);
-  radio.begin();
-  radio.powerUp();
-  uint8_t address[5] = "00001";
-  radio.openWritingPipe(address);
-  radio.setPALevel(RF24_PA_MAX);
-  radio.enableAckPayload();
-  radio.setChannel(76);
-  uint8_t channel = radio.getChannel();
-  Serial.print("Radio enabled at channel ");
-  Serial.print(channel);
-  Serial.println(".");
+  {
+    uint8_t address[5] = "00001";
+    radio.begin();
+    radio.powerUp();
+    radio.openWritingPipe(address);
+    radio.setPALevel(RF24_PA_HIGH); // If this value is set to RF24_PA_MAX, the radio will not work because the power supply is not enough.
+    radio.enableAckPayload();
+    radio.setChannel(76);
+    uint8_t channel = radio.getChannel();
+    Serial.print("Radio enabled at channel ");
+    Serial.print(channel);
+    Serial.println(".");
+  }
 
   // Initialize analog input
-  pinMode(PIN_THROTTLE, INPUT);
-  pinMode(PIN_PITCH, INPUT);
-  pinMode(PIN_ROLL, INPUT);
-  Serial.println("Analog input ready.");
+  {
+    pinMode(PIN_THROTTLE, INPUT);
+    pinMode(PIN_PITCH, INPUT);
+    pinMode(PIN_ROLL, INPUT);
+    Serial.println("Analog input ready.");
+  }
 
   Serial.println("Controller ready.");
 
