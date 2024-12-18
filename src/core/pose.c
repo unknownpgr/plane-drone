@@ -37,7 +37,7 @@ void estimateByAcceleration(Acceleration *accl, State *result)
 
 void estimateByComplementaryFilter(State *state, AngularVelocity *omega, Acceleration *accl, Scalar dt, State *result)
 {
-  const float gain = 0.95f;
+  const float gain = 0.99f; // 0.95 for this gain was too low.
 
   State tmp;
   estimateByAngularVelocity(state, omega, dt, &tmp);
