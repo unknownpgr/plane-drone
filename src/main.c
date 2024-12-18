@@ -14,60 +14,66 @@
 
 static void mode_flight()
 {
-
+  // State estimation variables
   State state;
   IMUData imuData;
-  EulerAngle omega; // Unit: rad/s
-  EulerAngle accel; // Unit: m/s^2
   uint16_t lastTime = timer_micros();
   ControllerData control;
-
-  float commandPitch = 0;
-  float commandRoll = 0;
-  float commandThrottle = 0;
-
   initializeState(&state);
 
+  // Control command variables
+  float commandThrottle = 0; // 0 ~ 1
+  float commandPitch = 0;    // -1 ~ 1
+  float commandRoll = 0;     // -1 ~ 1
+
+  // PD control variables
+  float gainP = 0.75f;
+  float gainD = 0.2f;
+  float previousPitchError = 0;
+  float previousRollError = 0;
+  float maxFlapAngle = 75;
+
+  // Deadman switch
   uint16_t deadmanSwitchDefault = 600;
   uint16_t deadmanSwitch = deadmanSwitchDefault;
 
   while (true)
   {
-    util_set_led(true);
-    if (deadmanSwitch > 0)
+    // Check deadman switch (controller connection)
     {
-      deadmanSwitch--;
-    }
-    else
-    {
-      // If deadman switch is activated, stop the motor and wait for the radio signal
-      actuator_setThrottle(0);
-      actuator_setFlapLeft(0);
-      actuator_setFlapRight(0);
-      util_set_led(false);
-      communication_send_serial("DEADMAN SWITCH ACTIVATED\r\n");
-
-      while (true)
+      if (deadmanSwitch > 0)
       {
-        if (communication_receive_radio(&control))
-        {
-          deadmanSwitch = deadmanSwitchDefault;
-          break;
-        }
+        deadmanSwitch--;
+      }
+      else
+      {
+        // If deadman switch is activated, disable throttle.
+        // Flap control is still required for safe landing.
+        actuator_setThrottle(0);
+        util_set_led(false);
+        commandThrottle = 0;
       }
     }
 
-    // Read command
+    // Read command from the controller if available
     if (communication_receive_radio(&control))
     {
-      uint16_t throttle = control.throttle;
-      uint16_t pitch = control.pitch;
-      uint16_t roll = control.roll;
-
-      commandThrottle = throttle / 1023.f;
-      commandPitch = (pitch - 512.f) * 90.f / 512.f;
-      commandRoll = (roll - 512.f) * 90.f / 512.f;
       deadmanSwitch = deadmanSwitchDefault;
+      util_set_led(true);
+
+      // NOTE: range of control values are 0 ~ 1023
+      uint16_t throttleRaw = control.throttle;
+      uint16_t pitchRaw = control.pitch;
+      uint16_t rollRaw = control.roll;
+
+      commandThrottle = throttleRaw / 1023.f;
+
+      float newPitchCommand = (pitchRaw - 512.f) / 512.f;
+      float newRollCommand = (rollRaw - 512.f) / 512.f;
+
+      // Use low-pass filter (IIR) to smooth the command
+      commandPitch = 0.1 * commandPitch + 0.9 * newPitchCommand;
+      commandRoll = 0.1 * commandRoll + 0.9 * newRollCommand;
     }
 
     imu_read(&imuData);
@@ -75,30 +81,54 @@ static void mode_flight()
     // 센서가 위아래로 뒤집힌 경우, y, z축만 반대로 뒤집힌다. x축을 기준으로 rotation했기 때문이다.
     // 이때 피치는 일반적인 경우와 다르게 기수가 아래로 가면 양수임에 유의하라. 좌표계를 그렇게 설정했기 때문이다.
 
-    omega.roll = imuData.gx;
-    omega.pitch = -imuData.gy;
-    omega.yaw = -imuData.gz;
-    accel.roll = imuData.ax;
-    accel.pitch = -imuData.ay;
-    accel.yaw = -imuData.az;
+    EulerAngle omega; // Unit: rad/s
+    EulerAngle accel; // Unit: m/s^2
+    float dt;         // Unit: s
+    {
 
-    uint16_t currentTime = timer_micros();
-    float dt = (currentTime - lastTime) / 1000000.0;
-    lastTime = currentTime;
+      omega.roll = imuData.gx;
+      omega.pitch = -imuData.gy;
+      omega.yaw = -imuData.gz;
+      accel.roll = imuData.ax;
+      accel.pitch = -imuData.ay;
+      accel.yaw = -imuData.az;
+      uint16_t currentTime = timer_micros();
+      dt = (currentTime - lastTime) / 1000000.0;
+      lastTime = currentTime;
+      estimateByComplementaryFilter(&state, &omega, &accel, dt, &state);
+    }
 
-    estimateByComplementaryFilter(&state, &omega, &accel, dt, &state);
+    // Control pitch and roll using PD control
 
-    float flapLeft = (state.pitch + state.roll) * 180.0 / PI + commandPitch + commandRoll;
-    float flapRight = (state.pitch - state.roll) * 180.0 / PI + commandPitch - commandRoll;
+    float pitchError = commandPitch - state.pitch;
+    float rollError = commandRoll - state.roll;
 
-    flapLeft = flapLeft > 60 ? 60 : flapLeft;
-    flapLeft = flapLeft < -60 ? -60 : flapLeft;
-    flapRight = flapRight > 60 ? 60 : flapRight;
-    flapRight = flapRight < -60 ? -60 : flapRight;
+    float pitchP = gainP * pitchError;
+    float rollP = gainP * rollError;
+
+    float pitchD = gainD * (pitchError - previousPitchError) / dt;
+    float rollD = gainD * (rollError - previousRollError) / dt;
+    previousPitchError = pitchError;
+    previousRollError = rollError;
+
+    float pitchControl = pitchP + pitchD;
+    float rollControl = rollP + rollD;
+
+    float flapLeft = (pitchControl + rollControl) * 90.0;
+    float flapRight = (pitchControl - rollControl) * 90.0;
+
+    // Limit the flap angle
+
+    flapLeft = flapLeft > maxFlapAngle ? maxFlapAngle : flapLeft;
+    flapLeft = flapLeft < -maxFlapAngle ? -maxFlapAngle : flapLeft;
+    flapRight = flapRight > maxFlapAngle ? maxFlapAngle : flapRight;
+    flapRight = flapRight < -maxFlapAngle ? -maxFlapAngle : flapRight;
+
+    // Set the actuator values
 
     actuator_setThrottle(commandThrottle);
-    actuator_setFlapLeft(+flapLeft);
-    actuator_setFlapRight(-flapRight);
+    actuator_setFlapLeft(-flapLeft);
+    actuator_setFlapRight(+flapRight);
   }
 }
 
